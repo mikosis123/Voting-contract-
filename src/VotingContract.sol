@@ -10,7 +10,8 @@ contract Voting {
         mapping(address => bool) hasVoted; 
         mapping(address => bool) vote;     
     }
-    
+    event ProposalCreated (uint proID );
+    event VoteCast(uint proID,address voters);
     Proposal[] public proposals;
     
    
@@ -18,6 +19,7 @@ contract Voting {
         Proposal storage newProposal = proposals.push();
         newProposal.target = proposal;
         newProposal.data = data;
+        emit ProposalCreated(proposals.length-1);
     }
 
 
@@ -46,5 +48,6 @@ contract Voting {
         // Update the voter's vote record
         selectedProposal.hasVoted[msg.sender] = true;
         selectedProposal.vote[msg.sender] = vote;
+        emit VoteCast(proID,msg.sender);
     }
 }
