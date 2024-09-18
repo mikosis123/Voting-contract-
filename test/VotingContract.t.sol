@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol";
-import "./Voting.sol";  // Adjust the import path based on your project structure
+import "../src/VotingContract.sol";  // Adjust the import path based on your project structure
 
 contract VotingTest is Test {
     Voting voting;
@@ -11,16 +11,17 @@ contract VotingTest is Test {
     address member3;
 
     function setUp() public {
-        member1 = address(0x1);
-        member2 = address(0x2);
-        member3 = address(0x3);
+    member1 = address(0x1);
+    member2 = address(0x2);
+    member3 = address(0x3);
 
-        // Deploy the Voting contract with two members
-        address;
-        members[0] = member2;
-        members[1] = member3;
-        voting = new Voting(members);
-    }
+    // Use memory array to pass members to the contract
+    address;
+_members[0] = member2;
+_members[1] = member3;
+    voting = new Voting(_members);  // Assuming the constructor takes an array of addresses
+}
+
 
     function testCreateProposal() public {
         vm.startPrank(member2);  // Use member2 to create a proposal
@@ -38,7 +39,7 @@ contract VotingTest is Test {
 
     function testCastVote() public {
         vm.startPrank(member2);
-        voting.newProposal(address(0), "0x");  // Create a proposal
+        voting.newProposal(address(0), bytes("")); // Create a proposal
         vm.stopPrank();
 
         vm.startPrank(member3);  // Use member3 to vote
@@ -55,36 +56,43 @@ contract VotingTest is Test {
         voting.castVote(0, false);
     }
 
-    function testExecuteProposal() public {
-        vm.startPrank(member2);
-        voting.newProposal(address(this), abi.encodeWithSignature("dummyFunction()"));  // Create a proposal
-        vm.stopPrank();
+   function testExecuteProposal() public {
+    vm.startPrank(member2);
+    voting.newProposal(address(this), abi.encodeWithSignature("dummyFunction()"));  // Create a proposal
+    vm.stopPrank();
 
-        // Member3 votes "yes"
-        vm.startPrank(member3);
-        voting.castVote(0, true);  // Vote "yes"
-        vm.stopPrank();
+    // Member3 votes "yes"
+    vm.startPrank(member3);
+    voting.castVote(0, true);  // Vote "yes"
+    vm.stopPrank();
 
-        // Member2 votes "yes"
-        vm.startPrank(member2);
-        voting.castVote(0, true);  // Vote "yes"
-        vm.stopPrank();
+    // Member2 votes "yes"
+    vm.startPrank(member2);
+    voting.castVote(0, true);  // Vote "yes"
+    vm.stopPrank();
 
-        // Check that the proposal has not been executed yet
-        (address target, bytes memory data, uint256 yesCount, uint256 noCount, bool executed) = voting.proposals(0);
-        assertFalse(executed);
+    // Check that the proposal has not been executed yet
+    (address target, bytes memory data, uint256 yesCount, uint256 noCount, bool executed) = voting.proposals(0);
+    assertFalse(executed);
 
-        // Cast more votes to reach the minimum required
-        vm.startPrank(member1);
-        voting.castVote(0, true);  // Vote "yes"
-        vm.stopPrank();
+    // Member1 votes "yes"
+    vm.startPrank(member1);
+    voting.castVote(0, true);  // Vote "yes"
+    vm.stopPrank();
 
-        // Now the proposal should be executed
-        (bool success, ) = voting.proposals(0).target.call(voting.proposals(0).data);
-        assertTrue(success);
+    // Now execute the proposal
+    vm.startPrank(member2);
+    voting.executeProposal(0);  // Execute the proposal
+    vm.stopPrank();
 
-        // Check that the proposal has been executed
-        (address targetExecuted, bytes memory dataExecuted, uint256 yesCountExecuted, uint256 noCountExecuted, bool executedExecuted) = voting.proposals(0);
-        assertTrue(executedExecuted);
-    }
+    // Check that the proposal has been executed
+    (, , , , bool executedExecuted) = voting.proposals(0);
+    assertTrue(executedExecuted);
+}
+
+// Dummy function to be executed by the proposal
+function dummyFunction() public pure returns (bool) {
+    return true;
+}
+
 }
