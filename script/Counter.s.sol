@@ -6,13 +6,14 @@ import {Voting} from "../src/VotingContract.sol";
 
 contract VotingScript is Script {
     Voting public voting;
+    address[]  members;
 
     function setUp() public {}
 
     function run() public {
         vm.startBroadcast();
 
-        voting = new Voting();
+        voting = new Voting(members);
 
         vm.stopBroadcast();
     }
