@@ -15,7 +15,7 @@ contract Voting {
     address public owner;  // The deployer of the contract
     mapping(address => bool) public members;  // Addresses allowed to create proposals and vote
 
-    uint constant MINIMUM_YES_VOTES = 10;  // Minimum number of yes votes to execute proposal
+    uint constant MINIMUM_YES_VOTES = 2;  // Minimum number of yes votes to execute proposal
 
     event ProposalCreated(uint proID);
     event VoteCast(uint proID, address voter);
@@ -83,12 +83,12 @@ contract Voting {
 
         // Check if the proposal has reached the threshold for execution
         if (selectedProposal.yesCount >= MINIMUM_YES_VOTES) {
-            _executeProposal(proID);
+            executeProposal(proID);
         }
     }
 
     // Internal function to execute the proposal when it meets the required number of votes
-    function _executeProposal(uint proID) internal {
+    function executeProposal(uint proID) public {
         Proposal storage selectedProposal = proposals[proID];
 
         // Ensure the proposal hasn't already been executed
