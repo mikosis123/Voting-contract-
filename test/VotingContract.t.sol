@@ -53,34 +53,26 @@ contract VotingTest is Test {
         voting.castVote(0, false);
     }
 
-    function testExecuteProposal() public {
-        vm.startPrank(member2);
-        voting.newProposal(address(this), abi.encodeWithSignature("dummyFunction()"));  // Create a proposal
-        vm.stopPrank();
+   function testExecuteProposal() public {
+    vm.startPrank(member2);
+    voting.newProposal(address(this), abi.encodeWithSignature("dummyFunction()"));  // Create a proposal
+    vm.stopPrank();
 
-        // Member3 votes "yes"
-        vm.startPrank(member3);
-        voting.castVote(0, true);  // Vote "yes"
-        vm.stopPrank();
+    // Member3 votes "yes"
+    vm.startPrank(member3);
+    voting.castVote(0, true);  // Vote "yes"
+    vm.stopPrank();
 
-        // Member2 votes "yes"
-        vm.startPrank(member2);
-        voting.castVote(0, true);  // Vote "yes"
-        vm.stopPrank();
+    // Member2 votes "yes"
+    vm.startPrank(member2);
+    voting.castVote(0, true);  // Vote "yes"
+    vm.stopPrank();
 
-        // Check that the proposal has not been executed yet
-        (address target, bytes memory data, uint256 yesCount, uint256 noCount, bool executed) = voting.proposals(0);
-        assertFalse(executed);
+    // Check that the proposal has been executed automatically after reaching the threshold
+    (address target, bytes memory data, uint256 yesCount, uint256 noCount, bool executed) = voting.proposals(0);
+    assertTrue(executed);  // The proposal should already be executed, no need for a manual execution call
+}
 
-        // Now execute the proposal
-        vm.startPrank(member2);
-        voting.executeProposal(0);  // Execute the proposal
-        vm.stopPrank();
-
-        // Check that the proposal has been executed
-        (, , , , bool executedExecuted) = voting.proposals(0);
-        assertTrue(executedExecuted);
-    }
 
     // Dummy function to be executed by the proposal
     function dummyFunction() public pure returns (bool) {
